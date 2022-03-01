@@ -667,6 +667,35 @@ module connector_corner(round_outside=true, round_inside=true, border=false) {
 
 
 
+
+
+/*/////////////////////////////////////////////////////////////////
+// Section: Modules
+*/
+/*///////////////////////////////////////////////////////
+// Module: offset_border()
+//
+    Description:
+        Skew/Shears overhang for border pieces, in case your (side-) walls are not fully vertical
+
+    Arguments:
+        height      (undef) = The "height" distance on the Z-axis
+        overhang    (undef) = The "width" distance on the Y-axis
+//
+///////////////////////////////////////////////////////*/
+module offset_border(height, overhang){
+    // Shear Value (Shear Y along Z)
+    m=[[1,0,0,0],
+       [0,1,-(overhang/height),overhang],
+       [0,0,1,0],
+       [0,0,0,1]];
+    multmatrix(m) children();
+}
+
+
+
+
+
 /*#################################################################
 ## Section: Functions
 */
