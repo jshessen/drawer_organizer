@@ -456,7 +456,7 @@ module divider_bend(length=100, distance=bend_distance, radius_factor=bend_radiu
 
 module connector_zero(border=false) {
     union() {
-        fitting(male=true, border=border);
+        !fitting(male=true, border=border);
         scale([1,-1,1])
             fitting(male=true, border=border);
     }
@@ -664,3 +664,50 @@ module connector_corner(round_outside=true, round_inside=true, border=false) {
     else
         connector_corner_normal(round_outside=round_outside, round_inside=round_inside);
 }
+
+
+
+/*#################################################################
+## Section: Functions
+*/
+/*#######################################################
+## Function: get_radius() = get_bottom() = get_x() = get_first() = vector[0]
+## Description:
+##   Given an array of length >0, return the first element
+## Arguments:
+##   vector = Array of vertices.
+#######################################################*/
+function get_first(vector)  = vector[0];
+function get_x(vector)      = get_first(vector);
+function get_bottom(vector) = get_first(vector);
+function get_radius(vector) = get_first(vector);
+/*#######################################################
+## Function: get_height() = get_top() = get_y() = get_second() = vector[1]
+## Description:
+##   Given an array of length >1, return the first element
+## Arguments:
+##   vector = Array of vertices.
+#######################################################*/
+function get_second(vector) = vector[1];
+function get_y(vector)      = get_second(vector);
+function get_top(vector) = get_second(vector);
+function get_height(vector) = get_second(vector);
+/*#######################################################
+## Function: get_z() = get_last() = vector[len(vector)-1]
+## Description:
+##   Given an array of length >2, return the first element
+## Arguments:
+##   vector = Array of vertices.
+#######################################################*/
+function get_last(vector) = vector[len(vector)-1];
+function get_z(vector) = get_last(vector);
+/*#######################################################
+## Function: distance()
+## Description:
+##   Given an array of length >2, return the first element
+## Arguments:
+##   vector = Array of vertices.
+#######################################################*/
+function distance(vector) = sqrt(pow((get_x(get_first(vector))-get_x(get_second(vector))),2)
+                               + pow((get_y(get_first(vector))-get_y(get_second(vector))),2)
+                               + pow((get_z(get_first(vector))-get_z(get_second(vector))),2));
