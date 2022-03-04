@@ -42,7 +42,7 @@ radius_top = width_top/2;
 height_linear = height-radius_top;
 
 
-parts(part);
+//parts(part);
 
 
 module parts(part) {
@@ -677,7 +677,25 @@ module connector_corner(round_outside=true, round_inside=true, border=false) {
         connector_corner_normal(round_outside=round_outside, round_inside=round_inside);
 }
 
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+test();
+module test(){
+    h=height-(width_top/2);
 
+    border=false;
+    p=false;
+    if(p){
+        if(border){
+            offset_border(h,border_overhang)
+                profile(divider_length,width_bottom,width_top,height, border=border);
+        } else {
+            profile(divider_length,width_bottom,width_top,height);
+        }
+    } else {
+        fitting_test(width_bottom,width_top,height);
+    }
+}
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
 
 
@@ -737,6 +755,75 @@ module profile_2d(points, r){
     polygon(concat(get_bottom(points), get_top(points)),[[0,1,3,2]]);
     translate([0,h])
         circle(r=r, $fn=360);
+}
+/*///////////////////////////////////////////////////////
+// Module: fitting()
+//
+    Description:
+        Creates 3D profile object
+
+    Arguments:
+        points  (undef) = The list of x,y points of the polygon
+*/
+/* Example: Make sample object
+//   fitting();
+///////////////////////////////////////////////////////*/
+module fitting_test(b1,b2,h, male=true, border=false){
+    // shrink male piece a little bit
+    gap = male ? gap : 0;
+    gap_top = male ? gap_top : 0;
+
+    // For crazy people, that choose width_top > width_bottom. Otherwise pieces
+    // cannot be stuck together. Such a design actually looks quite nice ;)
+    r2 = b2 <= b1 ? b2/2 : b1/2;
+    h=h-r2;
+    r1 = border ? (r2+(b1/2)/2) : b1/2;
+    r2_gap = r2+(r1-r2)*gap_top/h;
+    r3=border?r2:r1;
+    
+    // snap connection variables
+    snap_height_factor = 0.2;
+    snap_height = h * snap_height_factor;
+    snap_r = (r1 * (1-snap_height_factor) + r2 * snap_height_factor);
+    echo(r1=r1);
+    echo(r2=r2);
+    echo(snap_r=snap_r);
+    snap_small_r = 0.3*snap_r;
+    echo(snap_small_r=snap_small_r);
+    snap_radius = snap_small_r +
+                  snap_connection_size;
+    echo(snap_radius=snap_radius);
+    
+    b1_coord=[[-(r3),0], [r1,0]];
+    b2_coord=[[-(r2),h], [r2,h]];
+    points=concat([b1_coord], [b2_coord]);
+    /* Build 3D Polygon
+    translate([0,r3,0]) rotate([90,0,90])
+        profile_2d(points);*/
+        
+        
+        union() {
+            linear_extrude(height=h-gap_top, scale=r2_gap/r1) {
+                polygon([
+                    [-0.3*r1+gap, 0],
+                    [0.3*r1-gap, 0],
+                    [0.5*r1-gap, r1],
+                    [-0.5*r1+gap, r1]
+                ]);
+                translate([0,r1]) {
+                    circle(r=0.6*r1-gap, $fn=360);
+                    // add "air channel" for female piece
+                    if (!male)
+                        translate([-0.1*r1,0])
+                            square([0.2*r1, r1]);
+                }
+            }
+            // snap connection
+            if (snap_connection_size > 0)
+                translate([0,0,snap_height])
+                    rotate([-90,0,0])
+                        cylinder(h=r1, r1=snap_radius - gap, r2=0.8*snap_radius - gap, $fn=360);
+        }
 }
 /*///////////////////////////////////////////////////////
 // Module: offset_border()
