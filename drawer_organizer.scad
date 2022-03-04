@@ -1,4 +1,5 @@
 /* [Global Parameters] */
+test=true;
 part = "connector_all"; // [connector_all:All Connectors,connector_zero:Zero Length Straight Connector,connector_straight:Straight Connector,connector_t:Edgy T-Connector,connector_t_round:Round T-Connector,connector_x:Edgy X-Connector,connector_x_round:Round X-Connector,connector_corner_edgy:Edgy Corner Connector,connector_corner:Corner Connector,connector_corner_round:Round Corner Connector,divider:Straight Divider,divider_lowered:Divider With Lowered Section,divider_bend_right:Divider With Right Bend, divider_bend_left:Divider With Left Bend,connector_all_border:All Border Connectors,connector_zero_border:Border Zero Length Straight Connector,connector_straight_border:Border Straight Connector,connector_t_border:Border Edgy T-Connector,connector_t_round_border:Border Round T-Connector,connector_corner_edgy_border:Border Edgy Corner Connector,connector_corner_border:Border Corner Connector,connector_corner_round_border:Border Round Corner Connector,divider_border:Border Divider Parts]
 
 height = 50;
@@ -42,7 +43,10 @@ radius_top = width_top/2;
 height_linear = height-radius_top;
 
 
-//parts(part);
+if(test)
+    test();
+else
+    parts(part);
 
 
 module parts(part) {
@@ -131,7 +135,7 @@ module rotate_extrude2(angle=360, size=1000) {
 
     // support for angle parameter in rotate_extrude was added after release 2015.03
     // Thingiverse customizer is still on 2015.03
-    angleSupport = (version_num() > 20150399) ? true : false; // Next openscad releases after 2015.03.xx will have support angle parameter
+    angleSupport = (version_num() > 20150399) ? true : false; // Next OpenSCAD releases after 2015.03.xx will have support angle parameter
     // Using angle parameter when possible provides huge speed boost, avoids a difference operation
 
     if (angleSupport) {
@@ -210,7 +214,7 @@ module profile_corner(round=false, border=false) {
     }
 }
 
-module fitting(male=true, border=false) {
+/*module fitting(male=true, border=false) {
     // shrink male piece a little bit
     gap = male ? gap : 0;
     gap_top = male ? gap_top : 0;
@@ -255,16 +259,18 @@ module fitting(male=true, border=false) {
                         cylinder(h=connector_length, r1=snap_radius - gap, r2=0.8*snap_radius - gap);
         }
     }
-}
+}*/
 
 module divider(length=100, border=false) {
     difference() {
         //profile(length=length, border=border);
         profile(length,width_bottom,width_top,height, border=border);
         scale([1,-1,1])
-            fitting(male=false, border=border);
+            fitting(width_bottom,width_top,height, male=false, border=border);
+            //fitting(male=false, border=border);
         translate([0,-length])
-            fitting(male=false, border=border);
+            fitting(width_bottom,width_top,height, male=false, border=border);
+            //fitting(male=false, border=border);
     }
 }
 
@@ -398,9 +404,11 @@ module divider_lowered(length=100, lower=lowered_height, radius1_factor=lowered_
             }
         }
         rotate([0,0,180])
-            fitting(male=false);
+            fitting(width_bottom,width_top,height, male=false);
+            //fitting(male=false);
         translate([0,-length])
-            fitting(male=false);
+            fitting(width_bottom,width_top,height, male=false);
+            //fitting(male=false);
     }
 }
 
@@ -434,7 +442,7 @@ module divider_bend(length=100, distance=bend_distance, radius_factor=bend_radiu
             // straight middle part
             // In case the middle part is not needed, this is a tiny little glue piece
             // between the previous two parts. It fixes an issue with broken geometry, that
-            // is caused by rounding errors. Openscad does not like to union pieces, that
+            // is caused by rounding errors. OpenSCAD does not like to union pieces, that
             // only touch. So far this is the only place where I experienced actual errors
             // when union exactly touching pieces.
             hull() {
@@ -452,17 +460,21 @@ module divider_bend(length=100, distance=bend_distance, radius_factor=bend_radiu
             }
         }
         rotate([0,0,180])
-            fitting(male=false);
+            fitting(width_bottom,width_top,height, male=false);
+            //fitting(male=false);
         translate([distance,-length])
-            fitting(male=false);
+            fitting(width_bottom,width_top,height, male=false);
+            //fitting(male=false);
     }
 }
 
 module connector_zero(border=false) {
     union() {
-        fitting(male=true, border=border);
+        fitting(width_bottom,width_top,height, male=true, border=border);
+        //fitting(male=true, border=border);
         scale([1,-1,1])
-            fitting(male=true, border=border);
+            fitting(width_bottom,width_top,height, male=true, border=border);
+            //fitting(male=true, border=border);
     }
 }
 
@@ -471,10 +483,12 @@ module connector_straight(border=false) {
         union() {
             //profile(length=connector_length, border=border);
             profile(connector_length,width_bottom,width_top,height, border=border);
-            fitting(male=true, border=border);
+            fitting(width_bottom,width_top,height, male=true, border=border);
+            //fitting(male=true, border=border);
             translate([0,-connector_length,0])
                 scale([1,-1,1])
-                    fitting(male=true, border=border);
+                    fitting(width_bottom,width_top,height, male=true, border=border);
+                    //fitting(male=true, border=border);
         }
     }
 }
@@ -484,7 +498,8 @@ module connector_x(round=true) {
         for (r=[0, 90, 180, 270]) {
             rotate([0,0,r]) {
                 translate([0,0.5*connector_length,0])
-                    fitting(male=true);
+                    fitting(width_bottom,width_top,height, male=true);
+                    //fitting(male=true);
                 if (round) {
                     profile_corner();
                 } else {
@@ -502,7 +517,8 @@ module connector_t_normal(round=true) {
         for (r=[0, 90, 180]) {
             rotate([0,0,r])
                 translate([0,0.5*connector_length,0])
-                    fitting(male=true);
+                    fitting(width_bottom,width_top,height, male=true);
+                    //fitting(male=true);
         }
         if (round) {
             for (r=[90, 180]) {
@@ -524,7 +540,8 @@ module connector_t_border(round=true) {
     connector_straight(border=true);
     rotate([0,0,90]) {
         translate([0,0.5*connector_length+border_overhang,0]) {
-            fitting(male=true);
+            fitting(width_bottom,width_top,height, male=true);
+            //fitting(male=true);
             intersection() {
                 //profile(connector_length+border_overhang);
                 profile(connector_length+border_overhang,width_bottom,width_top,height);
@@ -576,7 +593,8 @@ module connector_corner_normal(round_outside=true, round_inside=true) {
 
         scale([-1,1,1]) {
             translate([0,0.5*connector_length,0]) {
-                fitting(male=true, border=border);
+                fitting(width_bottom,width_top,height, male=true, border=border);
+                //fitting(male=true, border=border);
                 if (!round_outside)
                     //profile(length=0.5*connector_length, border=border);
                     profile(.5*connector_length,width_bottom,width_top,height, border=border);
@@ -584,7 +602,8 @@ module connector_corner_normal(round_outside=true, round_inside=true) {
         }
         translate([0.5*connector_length,0,0]) {
             rotate([0,0,270]) {
-                fitting(male=true, border=border);
+                fitting(width_bottom,width_top,height, male=true, border=border);
+                //fitting(male=true, border=border);
                 if (!round_outside)
                     //profile(length=0.5*connector_length, border=border);
                     profile(.5*connector_length,width_bottom,width_top,height, border=border);
@@ -630,7 +649,8 @@ module connector_corner_border(round_outside=true, round_inside=true) {
 
         scale([-1,1,1]) {
             translate([0,0.5*connector_length,0]) {
-                fitting(male=true, border=border);
+                fitting(width_bottom,width_top,height, male=true, border=border);
+                //fitting(male=true, border=border);
                 if (!round_outside) {
                     side_wall();
                 }
@@ -638,7 +658,8 @@ module connector_corner_border(round_outside=true, round_inside=true) {
         }
         translate([0.5*connector_length+border_overhang,-border_overhang,0]) {
             rotate([0,0,270]) {
-                fitting(male=true, border=border);
+                fitting(width_bottom,width_top,height, male=true, border=border);
+                //fitting(male=true, border=border);
                 if (!round_outside) {
                     side_wall();
                 }
@@ -678,7 +699,6 @@ module connector_corner(round_outside=true, round_inside=true, border=false) {
 }
 
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-test();
 module test(){
     h=height-(width_top/2);
 
@@ -692,7 +712,7 @@ module test(){
             profile(divider_length,width_bottom,width_top,height);
         }
     } else {
-        fitting_test(width_bottom,width_top,height);
+        fitting(width_bottom,width_top,height);
     }
 }
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -763,12 +783,16 @@ module profile_2d(points, r){
         Creates 3D profile object
 
     Arguments:
-        points  (undef) = The list of x,y points of the polygon
+        b1     (undef) = The "width" of the "bottom" of the fitting on X-axis
+        b2     (undef) = The "width" of the "top" of the profile on X-axis
+        h      (undef) = The "height" distance on the Z-axis
+        male   (true)  = Apply Male/Female characteristics to object
+        border (undef) = Boolean used to create a right trapezoid
 */
 /* Example: Make sample object
 //   fitting();
 ///////////////////////////////////////////////////////*/
-module fitting_test(b1,b2,h, male=true, border=false){
+module fitting(b1,b2,h, male=true, border=false){
     // shrink male piece a little bit
     gap = male ? gap : 0;
     gap_top = male ? gap_top : 0;
@@ -779,51 +803,53 @@ module fitting_test(b1,b2,h, male=true, border=false){
     h=h-r2;
     r1 = border ? (r2+(b1/2)/2) : b1/2;
     r2_gap = r2+(r1-r2)*gap_top/h;
-    r3=border?r2:r1;
     
+    bottom=(0.3*r1);
+    top=(0.5*r1);
+    b1_coord=[[-(bottom),0], [bottom,0]];
+    b2_coord=[[-(top),r1], [top,r1]];
+    points=concat([b1_coord], [b2_coord]);
+    /* Build 3D Polygon */
+    //translate([0,r3,0]) rotate([90,0,90])
+    union(){
+        linear_extrude(height=h-gap_top, scale=r2_gap/r1){
+            translate([0,-(gap),0]) offset(delta=-(gap)){
+                profile_2d(points,r=0.6*r1);
+                // add "air channel" for female piece
+                if (!male)
+                    translate([-0.1*r1,r1])
+                        square([0.2*r1, r1]);
+            }
+        }
+            snap_height_factor = 0.2;
+            snap_height = h * snap_height_factor;
+        translate([0,0,snap_height])
+            snap_fit(r1,r2,snap_height);
+    }
+}
+/*///////////////////////////////////////////////////////
+// Module: snap_fit()
+//
+    Description:
+        Skew/Shears overhang for border pieces, in case your (side-) walls are not fully vertical
+
+    Arguments:
+        height      (undef) = The "height" distance on the Z-axis
+        overhang    (undef) = The "width" distance on the Y-axis
+//
+///////////////////////////////////////////////////////*/
+module snap_fit(r1,r2,h, overhang){
     // snap connection variables
     snap_height_factor = 0.2;
-    snap_height = h * snap_height_factor;
     snap_r = (r1 * (1-snap_height_factor) + r2 * snap_height_factor);
-    echo(r1=r1);
-    echo(r2=r2);
-    echo(snap_r=snap_r);
     snap_small_r = 0.3*snap_r;
-    echo(snap_small_r=snap_small_r);
     snap_radius = snap_small_r +
                   snap_connection_size;
-    echo(snap_radius=snap_radius);
     
-    b1_coord=[[-(r3),0], [r1,0]];
-    b2_coord=[[-(r2),h], [r2,h]];
-    points=concat([b1_coord], [b2_coord]);
-    /* Build 3D Polygon
-    translate([0,r3,0]) rotate([90,0,90])
-        profile_2d(points);*/
-        
-        
-        union() {
-            linear_extrude(height=h-gap_top, scale=r2_gap/r1) {
-                polygon([
-                    [-0.3*r1+gap, 0],
-                    [0.3*r1-gap, 0],
-                    [0.5*r1-gap, r1],
-                    [-0.5*r1+gap, r1]
-                ]);
-                translate([0,r1]) {
-                    circle(r=0.6*r1-gap, $fn=360);
-                    // add "air channel" for female piece
-                    if (!male)
-                        translate([-0.1*r1,0])
-                            square([0.2*r1, r1]);
-                }
-            }
-            // snap connection
-            if (snap_connection_size > 0)
-                translate([0,0,snap_height])
-                    rotate([-90,0,0])
-                        cylinder(h=r1, r1=snap_radius - gap, r2=0.8*snap_radius - gap, $fn=360);
-        }
+    // snap connection
+    if (snap_connection_size > 0)
+        rotate([-90,0,0])
+            cylinder(h=r1, r1=snap_radius - gap, r2=0.8*snap_radius - gap, $fn=360);
 }
 /*///////////////////////////////////////////////////////
 // Module: offset_border()
