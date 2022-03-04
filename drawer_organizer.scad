@@ -51,7 +51,7 @@ else
 
 module parts(part) {
     if (part == "connector_all") {
-        line_up([line_up_space, 0]) {
+        line_up([0, line_up_space]) {
             connector_zero();
             connector_straight();
             connector_t(round=false);
@@ -81,7 +81,8 @@ module parts(part) {
     else if (part == "connector_corner_round")
         connector_corner(round_outside=true, round_inside=true);
     else if (part == "divider")
-        divider(length=divider_length);
+        divider(divider_length,width_bottom,width_top,height);
+        //divider(length=divider_length);
     else if (part == "divider_lowered")
         divider_lowered(length=divider_length);
     else if (part == "divider_bend_right")
@@ -113,7 +114,8 @@ module parts(part) {
             connector_corner(round_outside=true, round_inside=true, border=true);
         }
     } else if (part == "divider_border")
-        divider(border=true, length=divider_length);
+        divider(divider_length,width_bottom,width_top,height, border=true);
+        //divider(border=true, length=divider_length);
     else
         assert(false, "invalid part");
 }
@@ -261,7 +263,7 @@ module profile_corner(round=false, border=false) {
     }
 }*/
 
-module divider(length=100, border=false) {
+/*module divider(length=100, border=false) {
     difference() {
         //profile(length=length, border=border);
         profile(length,width_bottom,width_top,height, border=border);
@@ -272,7 +274,7 @@ module divider(length=100, border=false) {
             fitting(width_bottom,width_top,height, male=false, border=border);
             //fitting(male=false, border=border);
     }
-}
+}*/
 
 module divider_lowered(length=100, lower=lowered_height, radius1_factor=lowered_radius1_factor,
                        radius2_factor=lowered_radius2_factor) {
@@ -472,21 +474,23 @@ module connector_zero(border=false) {
     union() {
         fitting(width_bottom,width_top,height, male=true, border=border);
         //fitting(male=true, border=border);
-        scale([1,-1,1])
+        scale([-1,1,1])
             fitting(width_bottom,width_top,height, male=true, border=border);
             //fitting(male=true, border=border);
     }
 }
 
 module connector_straight(border=false) {
-    translate([0,0.5*connector_length,0]) {
+    half_connector=connector_length/2;
+    translate([0,half_connector,0]) {
         union() {
             //profile(length=connector_length, border=border);
             profile(connector_length,width_bottom,width_top,height, border=border);
-            fitting(width_bottom,width_top,height, male=true, border=border);
+            translate([-(half_connector),0,0])
+                fitting(width_bottom,width_top,height, male=true, border=border);
             //fitting(male=true, border=border);
-            translate([0,-connector_length,0])
-                scale([1,-1,1])
+            translate([half_connector,0,0])
+                scale([-1,1,1])
                     fitting(width_bottom,width_top,height, male=true, border=border);
                     //fitting(male=true, border=border);
         }
@@ -494,18 +498,19 @@ module connector_straight(border=false) {
 }
 
 module connector_x(round=true) {
+    half_connector=connector_length/2;
     union() {
         for (r=[0, 90, 180, 270]) {
             rotate([0,0,r]) {
-                translate([0,0.5*connector_length,0])
+                translate([-(half_connector),0,0])
                     fitting(width_bottom,width_top,height, male=true);
                     //fitting(male=true);
                 if (round) {
                     profile_corner();
                 } else {
-                    translate([0,0.5*connector_length,0])
+                    translate([-(half_connector/2),0,0])
                         //profile(0.5*connector_length);
-                        profile(0.5*connector_length,width_bottom,width_top,height);
+                        profile(half_connector,width_bottom,width_top,height);
                 }
             }
         }
@@ -513,26 +518,27 @@ module connector_x(round=true) {
 }
 
 module connector_t_normal(round=true) {
+    half_connector=connector_length/2;
     union() {
         for (r=[0, 90, 180]) {
             rotate([0,0,r])
-                translate([0,0.5*connector_length,0])
+                translate([-(half_connector),0,0])
                     fitting(width_bottom,width_top,height, male=true);
                     //fitting(male=true);
         }
         if (round) {
-            for (r=[90, 180]) {
+            for (r=[-90, 180]) {
                 rotate([0,0,r])
                     profile_corner();
             }
         } else {
-            rotate([0,0,270])
+            translate([0,-(half_connector/2),0])
+            rotate([0,0,90])
                 //profile(0.5*connector_length);
-                profile(0.5*connector_length,width_bottom,width_top,height);
+                profile(half_connector,width_bottom,width_top,height);
         }
-        translate([0,0.5*connector_length,0])
-            //profile(connector_length);
-            profile(0.5*connector_length,width_bottom,width_top,height);
+        //profile(connector_length);
+        profile(connector_length,width_bottom,width_top,height);
     }
 }
 
@@ -586,27 +592,29 @@ module connector_t(round=true, border=false) {
 
 module connector_corner_normal(round_outside=true, round_inside=true) {
     border=false;
+    half_connector=connector_length/2;
     union() {
         if (round_inside) {
             profile_corner(round=round_outside, border=border);
         }
 
-        scale([-1,1,1]) {
-            translate([0,0.5*connector_length,0]) {
-                fitting(width_bottom,width_top,height, male=true, border=border);
-                //fitting(male=true, border=border);
-                if (!round_outside)
-                    //profile(length=0.5*connector_length, border=border);
-                    profile(.5*connector_length,width_bottom,width_top,height, border=border);
-            }
+        translate([-half_connector,0,0]) {
+            fitting(width_bottom,width_top,height, male=true, border=border);
+            //fitting(male=true, border=border);
+            if (!round_outside)
+                //profile(length=0.5*connector_length, border=border);
+                translate([half_connector/2,0,0])
+                    profile(half_connector,width_bottom,width_top,height, border=border);
         }
-        translate([0.5*connector_length,0,0]) {
+        
+        translate([0,half_connector,0]) {
             rotate([0,0,270]) {
                 fitting(width_bottom,width_top,height, male=true, border=border);
                 //fitting(male=true, border=border);
                 if (!round_outside)
                     //profile(length=0.5*connector_length, border=border);
-                    profile(.5*connector_length,width_bottom,width_top,height, border=border);
+                    translate([half_connector/2,0,0])
+                        profile(half_connector,width_bottom,width_top,height, border=border);
             }
         }
 
@@ -723,6 +731,31 @@ module test(){
 // Section: Modules
 */
 /*///////////////////////////////////////////////////////
+// Module: divider()
+//
+    Description:
+        Creates a "Divider" object
+
+    Arguments:
+        l      (undef) = The "length" distance on the X-axis
+        b1     (undef) = The "width" of the "bottom" of the profile on Y-axis
+        b2     (undef) = The "width" of the "top" of the profile on Y-axis
+        h      (undef) = The "height" distance on the Z-axis
+        border (undef) = Boolean used to create a right trapezoid
+*/
+/* Example: Make sample object
+//   divider(divider_length,width_bottom,width_top,height);
+///////////////////////////////////////////////////////*/
+module divider(l,b1,b2,h, border=false) {
+    difference() {
+        profile(l,b1,b2,h, border=border);
+        mirror_copy(){
+            translate([(l/2),0])
+                fitting(b1,b2,h, female=true, border=border);
+        }
+    }
+}
+/*///////////////////////////////////////////////////////
 // Module: profile()
 //
     Description:
@@ -738,7 +771,7 @@ module test(){
 /* Example: Make sample object
 //   profile(divider_length,width_bottom,width_top,height, border=border);
 ///////////////////////////////////////////////////////*/
-module profile(l,b1,b2,h, border){
+module profile(l,b1,b2,h, border, center=true){
     border=(!is_undef(border))?border:false;
     r1=b1/2;
     r2=b2/2;
@@ -748,9 +781,11 @@ module profile(l,b1,b2,h, border){
     b1_coord=[[-(r3),0], [r1,0]];
     b2_coord=[[-(r2),h], [r2,h]];
     points=concat([b1_coord], [b2_coord]);
+    origin=(center)?[-(l/2),0,0] : [0,r3,0];
     // Build 3D Polygon
-    translate([0,r3,0]) rotate([90,0,90])
-        linear_extrude(l) profile_2d(points);
+    translate(origin) rotate([90,0,90])
+        linear_extrude(l)
+    profile_2d(points);
 }
 /*///////////////////////////////////////////////////////
 // Module: profile_2d()
@@ -787,12 +822,15 @@ module profile_2d(points, r){
         b2     (undef) = The "width" of the "top" of the profile on X-axis
         h      (undef) = The "height" distance on the Z-axis
         male   (true)  = Apply Male/Female characteristics to object
+        female (undef)  = Apply Male/Female characteristics to object
         border (undef) = Boolean used to create a right trapezoid
 */
 /* Example: Make sample object
-//   fitting();
+//   fitting(width_bottom,width_top,height);
 ///////////////////////////////////////////////////////*/
-module fitting(b1,b2,h, male=true, border=false){
+module fitting(b1,b2,h, male, female, border=false, center=true){
+    male=(!is_undef(male))?male:((!is_undef(female))?!female:true);
+    
     // shrink male piece a little bit
     gap = male ? gap : 0;
     gap_top = male ? gap_top : 0;
@@ -803,53 +841,56 @@ module fitting(b1,b2,h, male=true, border=false){
     h=h-r2;
     r1 = border ? (r2+(b1/2)/2) : b1/2;
     r2_gap = r2+(r1-r2)*gap_top/h;
+    r3=0.6*r1;
     
     bottom=(0.3*r1);
     top=(0.5*r1);
     b1_coord=[[-(bottom),0], [bottom,0]];
     b2_coord=[[-(top),r1], [top,r1]];
     points=concat([b1_coord], [b2_coord]);
+    origin=(center)?[0,0,0] : [(r3+r1)-(2*gap),r3-gap,0];
     /* Build 3D Polygon */
-    //translate([0,r3,0]) rotate([90,0,90])
-    union(){
-        linear_extrude(height=h-gap_top, scale=r2_gap/r1){
-            translate([0,-(gap),0]) offset(delta=-(gap)){
-                profile_2d(points,r=0.6*r1);
-                // add "air channel" for female piece
-                if (!male)
-                    translate([-0.1*r1,r1])
-                        square([0.2*r1, r1]);
+    translate(origin)
+        rotate([0,0,90]){
+        union(){
+            linear_extrude(height=h-gap_top, scale=r2_gap/r1){
+                translate([0,-(gap),0]) offset(delta=-(gap)){
+                    profile_2d(points,r=r3);
+                    // add "air channel" for female piece
+                    if (!male)
+                        translate([-0.1*r1,r1])
+                            square([0.2*r1, r1]);
+                }
+            }
+                snap_height_factor = 0.2;
+                snap_height = h * snap_height_factor;
+            if (snap_connection_size > 0){
+                translate([0,0,snap_height])
+                    snap_fit(r1,r2);
             }
         }
-            snap_height_factor = 0.2;
-            snap_height = h * snap_height_factor;
-        translate([0,0,snap_height])
-            snap_fit(r1,r2,snap_height);
     }
 }
 /*///////////////////////////////////////////////////////
 // Module: snap_fit()
 //
     Description:
-        Skew/Shears overhang for border pieces, in case your (side-) walls are not fully vertical
+        Creates a snap joint which can be incororated into a fitting to lock pieces into the correct position
 
     Arguments:
-        height      (undef) = The "height" distance on the Z-axis
-        overhang    (undef) = The "width" distance on the Y-axis
+        r1     (undef) = The "width" of the "bottom" of the profile on X-axis
+        r2     (undef) = The "width" of the "top" of the profile on X-axis
 //
 ///////////////////////////////////////////////////////*/
-module snap_fit(r1,r2,h, overhang){
+module snap_fit(r1,r2){
     // snap connection variables
     snap_height_factor = 0.2;
     snap_r = (r1 * (1-snap_height_factor) + r2 * snap_height_factor);
     snap_small_r = 0.3*snap_r;
-    snap_radius = snap_small_r +
-                  snap_connection_size;
+    snap_radius = snap_small_r + snap_connection_size;
     
-    // snap connection
-    if (snap_connection_size > 0)
-        rotate([-90,0,0])
-            cylinder(h=r1, r1=snap_radius - gap, r2=0.8*snap_radius - gap, $fn=360);
+    rotate([-90,0,0])
+        cylinder(h=r1, r1=snap_radius - gap, r2=0.8*snap_radius - gap, $fn=360);
 }
 /*///////////////////////////////////////////////////////
 // Module: offset_border()
@@ -869,6 +910,14 @@ module offset_border(height, overhang){
        [0,0,1,0],
        [0,0,0,1]];
     multmatrix(m) children();
+}
+
+// A custom mirror module that retains the original
+// object in addition to the mirrored one.
+// https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Tips_and_Tricks#Create_a_mirrored_object_while_retaining_the_original
+module mirror_copy(v = [1, 0, 0]) {
+    children();
+    mirror(v) children();
 }
 
 
