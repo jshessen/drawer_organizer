@@ -1,5 +1,4 @@
 /* [Global Parameters] */
-test=true;
 part = "connector_all"; // [connector_all:All Connectors,connector_zero:Zero Length Straight Connector,connector_straight:Straight Connector,connector_t:Edgy T-Connector,connector_t_round:Round T-Connector,connector_x:Edgy X-Connector,connector_x_round:Round X-Connector,connector_corner_edgy:Edgy Corner Connector,connector_corner:Corner Connector,connector_corner_round:Round Corner Connector,divider:Straight Divider,divider_lowered:Divider With Lowered Section,divider_bend_right:Divider With Right Bend, divider_bend_left:Divider With Left Bend,connector_all_border:All Border Connectors,connector_zero_border:Border Zero Length Straight Connector,connector_straight_border:Border Straight Connector,connector_t_border:Border Edgy T-Connector,connector_t_round_border:Border Round T-Connector,connector_corner_edgy_border:Border Edgy Corner Connector,connector_corner_border:Border Corner Connector,connector_corner_round_border:Border Round Corner Connector,divider_border:Border Divider Parts]
 
 height = 50;
@@ -43,10 +42,7 @@ radius_top = width_top/2;
 height_linear = height-radius_top;
 
 
-if(test)
-    test();
-else
-    parts(part);
+parts(part);
 
 
 module parts(part) {
@@ -277,14 +273,11 @@ module profile_corner(round=false, border=false) {
 
 /*module divider(length=100, border=false) {
     difference() {
-        //profile(length=length, border=border);
-        profile(length,width_bottom,width_top,height, border=border);
+        profile(length=length, border=border);
         scale([1,-1,1])
-            fitting(width_bottom,width_top,height, male=false, border=border);
-            //fitting(male=false, border=border);
+            fitting(male=false, border=border);
         translate([0,-length])
-            fitting(width_bottom,width_top,height, male=false, border=border);
-            //fitting(male=false, border=border);
+            fitting(male=false, border=border);
     }
 }*/
 
@@ -412,17 +405,14 @@ module divider_lowered(length=100, lower=lowered_height, radius1_factor=lowered_
 
             // body
             intersection() {
-                //profile(length);
                 profile(length,width_bottom,width_top,height, border=border);
                 flat_cap(top=false);
             }
         }
         rotate([0,0,180])
             fitting(width_bottom,width_top,height, male=false);
-            //fitting(male=false);
         translate([0,-length])
             fitting(width_bottom,width_top,height, male=false);
-            //fitting(male=false);
     }
 }
 
@@ -440,10 +430,8 @@ module divider_bend(length=100, distance=bend_distance, radius_factor=bend_radiu
         union() {
             // initial straight part and final straight part
             if (length_start > 0) {
-                //profile(length_start);
                 profile(length_start,width_bottom,width_top,height, border=border);
                 translate([distance,length_start-length])
-                    //profile(length_start);
                     profile(length_start,width_bottom,width_top,height, border=border);
             }
             // bend profile in one direction
@@ -750,7 +738,7 @@ module divider(l,b1,b2,h, border=false) {
 /* Example: Make sample object
 //   profile(divider_length,width_bottom,width_top,height, border=border);
 ///////////////////////////////////////////////////////*/
-module profile(l,b1,b2,h, border, center=true){
+module profile(l,b1,b2,h, border, center=false){
     border=(!is_undef(border))?border:false;
     r1=b1/2;
     r2=b2/2;
@@ -760,11 +748,10 @@ module profile(l,b1,b2,h, border, center=true){
     b1_coord=[[-(r3),0], [r1,0]];
     b2_coord=[[-(r2),h], [r2,h]];
     points=concat([b1_coord], [b2_coord]);
-    origin=(center)?[-(l/2),0,0] : [0,r3,0];
+    origin=(center)?[-(l/2),0,-(h/2)] : [-(l/2),0,0];
     // Build 3D Polygon
     translate(origin) rotate([90,0,90])
-        linear_extrude(l)
-    profile_2d(points);
+        linear_extrude(l) profile_2d(points);
 }
 /*///////////////////////////////////////////////////////
 // Module: profile_2d()
