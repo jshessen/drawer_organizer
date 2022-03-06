@@ -731,6 +731,44 @@ module test(){
 // Section: Modules
 */
 /*///////////////////////////////////////////////////////
+// Module: connector()
+//
+    Description:
+        Creates a "Connector" object
+
+    Arguments:
+        l      (undef) = The "length" distance on the X-axis
+        b1     (undef) = The "width" of the "bottom" of the profile on Y-axis
+        b2     (undef) = The "width" of the "top" of the profile on Y-axis
+        h      (undef) = The "height" distance on the Z-axis
+        border (undef) = Boolean used to create a right trapezoid
+*/
+/* Example: Make sample object
+//   connector(connector_length,width_bottom,width_top,height,connections=3);
+//   translate([40,0,0]) connector(0,width_bottom,width_top,height);
+///////////////////////////////////////////////////////*/
+module connector(l,b1,b2,h, connections, border=false){
+    connections=(!is_undef(connections)) ? abs(connections) : 2;
+    l=(!is_undef(l))? l
+     :(connections==1)?0.4
+     :0;
+    r=(!is_undef(r))? r
+     :(connections==1)? [0]
+     :(connections==3)? split_angle(270,connections)
+     :split_angle(360,connections);
+    
+    union() {
+        for (r=r) {
+            rotate([0,0,r]){
+                if(l) translate([l/4,0,0])
+                    profile(l/2,b1,b2,h, border=border);
+                translate([l/2,0,0])
+                   #fitting(b1,b2,h, male=true, border=border);
+            }
+        }
+    }
+}
+/*///////////////////////////////////////////////////////
 // Module: divider()
 //
     Description:
