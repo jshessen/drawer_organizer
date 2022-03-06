@@ -893,28 +893,33 @@ module snap_fit(r1,r2){
         cylinder(h=r1, r1=snap_radius - gap, r2=0.8*snap_radius - gap, $fn=360);
 }
 /*///////////////////////////////////////////////////////
-// Module: offset_border()
+// Module: shear()
 //
     Description:
-        Skew/Shears overhang for border pieces, in case your (side-) walls are not fully vertical
+        Shear/Skew object
 
     Arguments:
-        height      (undef) = The "height" distance on the Z-axis
-        overhang    (undef) = The "width" distance on the Y-axis
+        h       (undef) = The "height" distance on the Z-axis
+        shear   (undef) = The "shear" distance on the Y-axis
 //
 ///////////////////////////////////////////////////////*/
-module offset_border(height, overhang){
+module shear(h, shear){
     // Shear Value (Shear Y along Z)
     m=[[1,0,0,0],
-       [0,1,-(overhang/height),overhang],
+       [0,1,-(shear/h),shear],
        [0,0,1,0],
        [0,0,0,1]];
     multmatrix(m) children();
 }
-
-// A custom mirror module that retains the original
-// object in addition to the mirrored one.
-// https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Tips_and_Tricks#Create_a_mirrored_object_while_retaining_the_original
+/*///////////////////////////////////////////////////////
+// Module: mirror_copy()
+//
+    Description:
+        A custom mirror module that retains the original
+        object in addition to the mirrored one.
+    https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Tips_and_Tricks#Create_a_mirrored_object_while_retaining_the_original
+//
+///////////////////////////////////////////////////////*/
 module mirror_copy(v = [1, 0, 0]) {
     children();
     mirror(v) children();
