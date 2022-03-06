@@ -928,11 +928,28 @@ module mirror_copy(v = [1, 0, 0]) {
 ## Section: Functions
 */
 /*#######################################################
+## Function: split_angle()
+##
+    Description:
+        Build an vector of equadistant angles
+    Arguments:
+        a (360)   = Angle to be segmented
+        n (undef) = Number of segments
+        r ([])    = Return vector
+*/
+/* Example: Make sample object
+##  echo(split_angle(360,4);
+#######################################################*/
+function split_angle(a=360,n,r=[]) =
+    a==0 ? r : split_angle(a-(a/n),n-1,concat([a-(a/n)],r));
+/*#######################################################
 ## Function: get_radius() = get_bottom() = get_x() = get_first() = vector[0]
-## Description:
-##   Given an array of length >0, return the first element
-## Arguments:
-##   vector = Array of vertices.
+##
+    Description:
+        Given an array of length >0, return the first element
+    Arguments:
+        vector = Array of vertices.
+##
 #######################################################*/
 function get_first(vector)  = vector[0];
 function get_x(vector)      = get_first(vector);
@@ -940,10 +957,12 @@ function get_bottom(vector) = get_first(vector);
 function get_radius(vector) = get_first(vector);
 /*#######################################################
 ## Function: get_height() = get_top() = get_y() = get_second() = vector[1]
-## Description:
-##   Given an array of length >1, return the first element
-## Arguments:
-##   vector = Array of vertices.
+##
+    Description:
+        Given an array of length >1, return the first element
+    Arguments:
+        vector = Array of vertices.
+##
 #######################################################*/
 function get_second(vector) = vector[1];
 function get_y(vector)      = get_second(vector);
@@ -951,19 +970,23 @@ function get_top(vector) = get_second(vector);
 function get_height(vector) = get_second(vector);
 /*#######################################################
 ## Function: get_z() = get_last() = vector[len(vector)-1]
-## Description:
-##   Given an array of length >2, return the first element
-## Arguments:
-##   vector = Array of vertices.
+##
+    Description:
+        Given an array of length >2, return the first element
+    Arguments:
+        vector = Array of vertices.
+##
 #######################################################*/
 function get_last(vector) = vector[len(vector)-1];
 function get_z(vector) = get_last(vector);
 /*#######################################################
 ## Function: distance()
-## Description:
-##   Given an array of length >2, return the first element
-## Arguments:
-##   vector = Array of vertices.
+##
+    Description:
+        Given an array of length >2, return the first element
+    Arguments:
+        vector = Array of vertices.
+##
 #######################################################*/
 function distance(vector) = sqrt(pow((get_x(get_first(vector))-get_x(get_second(vector))),2)
                                + pow((get_y(get_first(vector))-get_y(get_second(vector))),2)
