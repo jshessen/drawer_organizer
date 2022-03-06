@@ -622,8 +622,8 @@ module connector_corner(round_outside=true, round_inside=true, border=false) {
 
 
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-// Section: "Export" Modules
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! Section: "Export" Modules
 */
 module connector_zero(border=false) { // `make` STL
     connector(0,width_bottom,width_top,height);            
@@ -639,7 +639,7 @@ module connector_t(round=true, border=false) { // `make` STL
         if(round)
             connector_t_border(round=round);
 }
-module connector_x(round=true, border=false) {
+module connector_x(round=true, border=false) { // `make` STL
     if(!border)
         if(!round)
             connector(connector_length,width_bottom,width_top,height,connections=4);
@@ -647,7 +647,8 @@ module connector_x(round=true, border=false) {
         if(round)
             connector_t_border(round=round);
 }
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+/*
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
 
 
