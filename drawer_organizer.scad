@@ -822,18 +822,21 @@ module profile_2d(points, r){
         b2     (undef) = The "width" of the "top" of the profile on X-axis
         h      (undef) = The "height" distance on the Z-axis
         male   (true)  = Apply Male/Female characteristics to object
-        female (undef)  = Apply Male/Female characteristics to object
+        female (undef) = Apply Male/Female characteristics to object
         border (undef) = Boolean used to create a right trapezoid
 */
 /* Example: Make sample object
 //   fitting(width_bottom,width_top,height);
 ///////////////////////////////////////////////////////*/
-module fitting(b1,b2,h, male, female, border=false, center=true){
+module fitting(b1,b2,h, male, female, border=false, center=false){
     male=(!is_undef(male))?male:((!is_undef(female))?!female:true);
+    // Offset value to eliminate coplanar face conflict
+    coplanar=0.0075;
     
     // shrink male piece a little bit
     gap = male ? gap : 0;
     gap_top = male ? gap_top : 0;
+    
 
     // For crazy people, that choose width_top > width_bottom. Otherwise pieces
     // cannot be stuck together. Such a design actually looks quite nice ;)
@@ -848,25 +851,30 @@ module fitting(b1,b2,h, male, female, border=false, center=true){
     b1_coord=[[-(bottom),0], [bottom,0]];
     b2_coord=[[-(top),r1], [top,r1]];
     points=concat([b1_coord], [b2_coord]);
-    origin=(center)?[0,0,0] : [(r3+r1)-(2*gap),r3-gap,0];
+    origin=(center)?[-((r1+r3)/2+coplanar),0,-(h/2+coplanar)]
+                   :[-(coplanar),0,-(coplanar)];
+    
     /* Build 3D Polygon */
-    translate(origin)
-        rotate([0,0,90]){
-        union(){
-            linear_extrude(height=h-gap_top, scale=r2_gap/r1){
-                translate([0,-(gap),0]) offset(delta=-(gap)){
-                    profile_2d(points,r=r3);
-                    // add "air channel" for female piece
-                    if (!male)
-                        translate([-0.1*r1,r1])
-                            square([0.2*r1, r1]);
+    shear(h,border?(r1-r2)/2:0){
+        translate(origin){
+            rotate([0,0,-90]){
+                union(){
+                    linear_extrude(height=h-gap_top, scale=r2_gap/r1){
+                        translate([0,-(gap),0]) offset(delta=-(gap)){
+                            profile_2d(points,r=r3);
+                            // add "air channel" for female piece
+                            if (!male)
+                                translate([-0.1*r1,r1])
+                                    square([0.2*r1, (r1)]);
+                        }
+                    }
+                        snap_height_factor = 0.2;
+                        snap_height = h * snap_height_factor;
+                    if (snap_connection_size > 0){
+                        translate([0,0,snap_height])
+                            snap_fit(r1,r2);
+                    }
                 }
-            }
-                snap_height_factor = 0.2;
-                snap_height = h * snap_height_factor;
-            if (snap_connection_size > 0){
-                translate([0,0,snap_height])
-                    snap_fit(r1,r2);
             }
         }
     }
