@@ -60,6 +60,20 @@ module parts(part) {
             connector_x(round=true);
             connector_corner(round_outside=false, round_inside=false);
             connector_corner(round_outside=false, round_inside=true);
+            connector_corner(round_outside=true, round_inside=true);        
+        }
+        translate([40,0,0]) line_up([0, line_up_space]) {
+            //connector_zero();
+            connector(0,width_bottom,width_top,height);            
+            //connector_straight();
+            connector(connector_length,width_bottom,width_top,height);
+            connector_t(round=false);
+            connector_t(round=true);
+            //connector_x(round=false);
+            connector(connector_length,width_bottom,width_top,height,connections=4);
+            connector_x(round=true);
+            connector_corner(round_outside=false, round_inside=false);
+            connector_corner(round_outside=false, round_inside=true);
             connector_corner(round_outside=true, round_inside=true);
         }
     } else if (part == "connector_zero")
@@ -82,7 +96,6 @@ module parts(part) {
         connector_corner(round_outside=true, round_inside=true);
     else if (part == "divider")
         divider(divider_length,width_bottom,width_top,height);
-        //divider(length=divider_length);
     else if (part == "divider_lowered")
         divider_lowered(length=divider_length);
     else if (part == "divider_bend_right")
@@ -115,7 +128,6 @@ module parts(part) {
         }
     } else if (part == "divider_border")
         divider(divider_length,width_bottom,width_top,height, border=true);
-        //divider(border=true, length=divider_length);
     else
         assert(false, "invalid part");
 }
