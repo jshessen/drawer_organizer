@@ -482,86 +482,12 @@ module divider_bend(length=100, distance=bend_distance, radius_factor=bend_radiu
     }
 }
 
-module connector_zero(border=false) {
-    union() {
-        fitting(width_bottom,width_top,height, male=true, border=border);
-        //fitting(male=true, border=border);
-        scale([-1,1,1])
-            fitting(width_bottom,width_top,height, male=true, border=border);
-            //fitting(male=true, border=border);
-    }
-}
-
-module connector_straight(border=false) {
-    half_connector=connector_length/2;
-    translate([0,half_connector,0]) {
-        union() {
-            //profile(length=connector_length, border=border);
-            profile(connector_length,width_bottom,width_top,height, border=border);
-            translate([-(half_connector),0,0])
-                fitting(width_bottom,width_top,height, male=true, border=border);
-            //fitting(male=true, border=border);
-            translate([half_connector,0,0])
-                scale([-1,1,1])
-                    fitting(width_bottom,width_top,height, male=true, border=border);
-                    //fitting(male=true, border=border);
-        }
-    }
-}
-
-module connector_x(round=true) {
-    half_connector=connector_length/2;
-    union() {
-        for (r=[0, 90, 180, 270]) {
-            rotate([0,0,r]) {
-                translate([-(half_connector),0,0])
-                    fitting(width_bottom,width_top,height, male=true);
-                    //fitting(male=true);
-                if (round) {
-                    profile_corner();
-                } else {
-                    translate([-(half_connector/2),0,0])
-                        //profile(0.5*connector_length);
-                        profile(half_connector,width_bottom,width_top,height);
-                }
-            }
-        }
-    }
-}
-
-module connector_t_normal(round=true) {
-    half_connector=connector_length/2;
-    union() {
-        for (r=[0, 90, 180]) {
-            rotate([0,0,r])
-                translate([-(half_connector),0,0])
-                    fitting(width_bottom,width_top,height, male=true);
-                    //fitting(male=true);
-        }
-        if (round) {
-            for (r=[-90, 180]) {
-                rotate([0,0,r])
-                    profile_corner();
-            }
-        } else {
-            translate([0,-(half_connector/2),0])
-            rotate([0,0,90])
-                //profile(0.5*connector_length);
-                profile(half_connector,width_bottom,width_top,height);
-        }
-        //profile(connector_length);
-        profile(connector_length,width_bottom,width_top,height);
-    }
-}
-
 module connector_t_border(round=true) {
     connector_straight(border=true);
     rotate([0,0,90]) {
         translate([0,0.5*connector_length+border_overhang,0]) {
             fitting(width_bottom,width_top,height, male=true);
-            //fitting(male=true);
             intersection() {
-                //profile(connector_length+border_overhang);
                 profile(connector_length+border_overhang,width_bottom,width_top,height);
                 skew = border_overhang;
                 max_radius = max(radius_top,radius_bottom);
@@ -595,13 +521,6 @@ module connector_t_border(round=true) {
     }
 }
 
-module connector_t(round=true, border=false) {
-    if (border)
-        connector_t_border(round=round);
-    else
-        connector_t_normal(round=round);
-}
-
 module connector_corner_normal(round_outside=true, round_inside=true) {
     border=false;
     half_connector=connector_length/2;
@@ -610,22 +529,18 @@ module connector_corner_normal(round_outside=true, round_inside=true) {
             profile_corner(round=round_outside, border=border);
         }
 
-        translate([-half_connector,0,0]) {
+        translate([half_connector,0,0]) {
             fitting(width_bottom,width_top,height, male=true, border=border);
-            //fitting(male=true, border=border);
             if (!round_outside)
-                //profile(length=0.5*connector_length, border=border);
-                translate([half_connector/2,0,0])
+                translate([(half_connector/2),0,0])
                     profile(half_connector,width_bottom,width_top,height, border=border);
         }
         
         translate([0,half_connector,0]) {
             rotate([0,0,270]) {
                 fitting(width_bottom,width_top,height, male=true, border=border);
-                //fitting(male=true, border=border);
                 if (!round_outside)
-                    //profile(length=0.5*connector_length, border=border);
-                    translate([half_connector/2,0,0])
+                    translate([(half_connector/2),0,0])
                         profile(half_connector,width_bottom,width_top,height, border=border);
             }
         }
@@ -648,7 +563,6 @@ module connector_corner_border(round_outside=true, round_inside=true) {
 
     module side_wall() {
         intersection() {
-            //profile(length=0.5*connector_length+border_overhang, border=border);
             profile(.5*connector_length+border_overhang,width_bottom,width_top,height, border=border);
             skew = border_overhang;
             translate([-(0.5*connector_length+border_overhang)+0.5*radius_bottom,0,0]) {
@@ -670,7 +584,6 @@ module connector_corner_border(round_outside=true, round_inside=true) {
         scale([-1,1,1]) {
             translate([0,0.5*connector_length,0]) {
                 fitting(width_bottom,width_top,height, male=true, border=border);
-                //fitting(male=true, border=border);
                 if (!round_outside) {
                     side_wall();
                 }
@@ -679,7 +592,6 @@ module connector_corner_border(round_outside=true, round_inside=true) {
         translate([0.5*connector_length+border_overhang,-border_overhang,0]) {
             rotate([0,0,270]) {
                 fitting(width_bottom,width_top,height, male=true, border=border);
-                //fitting(male=true, border=border);
                 if (!round_outside) {
                     side_wall();
                 }
@@ -718,24 +630,38 @@ module connector_corner(round_outside=true, round_inside=true, border=false) {
         connector_corner_normal(round_outside=round_outside, round_inside=round_inside);
 }
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-module test(){
-    h=height-(width_top/2);
 
-    border=false;
-    p=false;
-    if(p){
-        if(border){
-            offset_border(h,border_overhang)
-                profile(divider_length,width_bottom,width_top,height, border=border);
-        } else {
-            profile(divider_length,width_bottom,width_top,height);
-        }
-    } else {
-        fitting(width_bottom,width_top,height);
-    }
+
+
+
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+// Section: "Export" Modules
+*/
+module connector_zero(border=false) { // `make` STL
+    connector(0,width_bottom,width_top,height);            
+}
+module connector_straight(border=false) { // `make` STL
+    connector(connector_length,width_bottom,width_top,height);
+}
+module connector_t(round=true, border=false) { // `make` STL
+    if(!border)
+        if(!round)
+            connector(connector_length,width_bottom,width_top,height,connections=3);
+    else
+        if(round)
+            connector_t_border(round=round);
+}
+module connector_x(round=true, border=false) {
+    if(!border)
+        if(!round)
+            connector(connector_length,width_bottom,width_top,height,connections=4);
+    else
+        if(round)
+            connector_t_border(round=round);
 }
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
+
 
 
 
