@@ -747,11 +747,14 @@ module test(){
 //   divider(divider_length,width_bottom,width_top,height);
 ///////////////////////////////////////////////////////*/
 module divider(l,b1,b2,h, border=false) {
-    difference() {
-        profile(l,b1,b2,h, border=border);
-        mirror_copy(){
-            translate([(l/2),0])
-                fitting(b1,b2,h, female=true, border=border);
+    shear(h,border?border_overhang:0){
+        difference() {
+            profile(l,b1,b2,h, border=border);
+            mirror_copy(){
+                translate([-(l/2),0]){
+                    fitting(b1,b2,h, female=true, border=border);
+                }
+            }
         }
     }
 }
