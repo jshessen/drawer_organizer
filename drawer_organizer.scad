@@ -676,7 +676,7 @@ module connector_x(round=true, border=false) { // `make` STL
 ///////////////////////////////////////////////////////*/
 module connector(l,b1,b2,h, connections, border=false){
     connections=(!is_undef(connections)) ? abs(connections) : 2;
-    l=(!is_undef(l))? l
+    l=(!is_undef(l))? l/2
      :(connections==1)?0.4
      :0;
     r=(!is_undef(r))? r
@@ -687,9 +687,8 @@ module connector(l,b1,b2,h, connections, border=false){
     union() {
         for (r=r) {
             rotate([0,0,r]){
-                if(l) translate([l/4,0,0])
-                    profile(l/2,b1,b2,h, border=border);
-                translate([l/2,0,0])
+                    profile(l,b1,b2,h,linear=true);
+                translate([l,0,0])
                    #fitting(b1,b2,h, male=true, border=border);
             }
         }
