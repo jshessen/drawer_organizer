@@ -185,7 +185,7 @@ module profile_shape(border=false) {
             profile_shape(border=border);
 }*/
 
-/*module profile_round(radius, angle=90, border=false) {
+module profile_round(radius, angle=90, border=false) {
     border_overhang = border ? border_overhang : 0;
     translate([-radius-border_overhang,0]) {
         rotate_extrude2(angle=angle) {
@@ -193,13 +193,13 @@ module profile_shape(border=false) {
                 profile_shape(border=border);
         }
     }
-}*/
+}
 
 module profile_corner(round=false, border=false) {
     border_overhang = border ? border_overhang : 0;
     translate([0,0.5*connector_length,0])
         scale([-1,-1,1])
-            profile(0.5*connector_length,width_bottom,width_top,height, border=border);
+            profile_round(radius=0.5*connector_length, border=border);
     if (!round) {
         // add corner
         skew1 = border ? (radius_bottom-radius_top)/2 : 0;
@@ -941,20 +941,21 @@ module mirror_copy(v = [1, 0, 0]) {
 ## Function: trapezoid()
 ##
     Description:
-        Build a representative trapezoid vector
+        Build a representative trapezoid vector from [b1,b2,h]
     Arguments:
-        a (360)   = Angle to be segmented
-        n (undef) = Number of segments
-        r ([])    = Return vector
+        vector (undef) = [b1,b2,h]
+        b1     (undef) = The "width" of the "bottom" of the fitting on X-axis
+        b2     (undef) = The "width" of the "top" of the profile on X-axis
+        h      (undef) = The "height" distance on the Z-axis
 */
 /* Example: Make sample object
 ##  echo(split_angle(360,4);
 #######################################################*/
-function trapezoid(b1,b2,h, border=false) =
-    let(r1=b1/2)
-    let(r2=b2/2)
+function trapezoid(vector, border=false) =
+    let(r1=get_b1(vector)/2)
+    let(r2=get_b2(vector)/2)
     let(r3=border?r2:r1)
-    let(h=h-r2)
+    let(h=get_height(vector)-r2)
     let(b1_coord=[[-(r3),0], [r1,0]])
     let(b2_coord=[[-(r2),h], [r2,h]])
     concat([b1_coord], [b2_coord]);
@@ -986,8 +987,9 @@ function get_first(vector)  = vector[0];
 function get_x(vector)      = get_first(vector);
 function get_bottom(vector) = get_first(vector);
 function get_radius(vector) = get_first(vector);
+function get_b1(vector)     = get_first(vector);
 /*#######################################################
-## Function: get_height() = get_top() = get_y() = get_second() = vector[1]
+## Function: get_top() = get_y() = get_second() = vector[1]
 ##
     Description:
         Given an array of length >1, return the first element
@@ -999,8 +1001,9 @@ function get_second(vector) = vector[1];
 function get_y(vector)      = get_second(vector);
 function get_top(vector)    = get_second(vector);
 function get_height(vector) = get_second(vector);
+function get_b2(vector)     = get_second(vector);
 /*#######################################################
-## Function: get_z() = get_last() = vector[len(vector)-1]
+## Function: get_height() = get_z() = get_last() = vector[len(vector)-1]
 ##
     Description:
         Given an array of length >2, return the first element
@@ -1008,8 +1011,9 @@ function get_height(vector) = get_second(vector);
         vector = Array of vertices.
 ##
 #######################################################*/
-function get_last(vector) = vector[len(vector)-1];
-function get_z(vector)    = get_last(vector);
+function get_last(vector)   = vector[len(vector)-1];
+function get_z(vector)      = get_last(vector);
+function get_height(vector) = get_last(vector);
 /*#######################################################
 ## Function: distance()
 ##
