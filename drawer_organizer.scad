@@ -185,7 +185,7 @@ module profile_shape(border=false) {
             profile_shape(border=border);
 }*/
 
-module profile_round(radius, angle=90, border=false) {
+/*module profile_round(radius, angle=90, border=false) {
     border_overhang = border ? border_overhang : 0;
     translate([-radius-border_overhang,0]) {
         rotate_extrude2(angle=angle) {
@@ -193,13 +193,13 @@ module profile_round(radius, angle=90, border=false) {
                 profile_shape(border=border);
         }
     }
-}
+}*/
 
 module profile_corner(round=false, border=false) {
     border_overhang = border ? border_overhang : 0;
     translate([0,0.5*connector_length,0])
         scale([-1,-1,1])
-            profile_round(radius=0.5*connector_length, border=border);
+            profile(0.5*connector_length,width_bottom,width_top,height, border=border);
     if (!round) {
         // add corner
         skew1 = border ? (radius_bottom-radius_top)/2 : 0;
