@@ -908,6 +908,27 @@ module mirror_copy(v = [1, 0, 0]) {
 ## Section: Functions
 */
 /*#######################################################
+## Function: trapezoid()
+##
+    Description:
+        Build a representative trapezoid vector
+    Arguments:
+        a (360)   = Angle to be segmented
+        n (undef) = Number of segments
+        r ([])    = Return vector
+*/
+/* Example: Make sample object
+##  echo(split_angle(360,4);
+#######################################################*/
+function trapezoid(b1,b2,h, border=false) =
+    let(r1=b1/2)
+    let(r2=b2/2)
+    let(r3=border?r2:r1)
+    let(h=h-r2)
+    let(b1_coord=[[-(r3),0], [r1,0]])
+    let(b2_coord=[[-(r2),h], [r2,h]])
+    concat([b1_coord], [b2_coord]);
+/*#######################################################
 ## Function: split_angle()
 ##
     Description:
@@ -946,7 +967,7 @@ function get_radius(vector) = get_first(vector);
 #######################################################*/
 function get_second(vector) = vector[1];
 function get_y(vector)      = get_second(vector);
-function get_top(vector) = get_second(vector);
+function get_top(vector)    = get_second(vector);
 function get_height(vector) = get_second(vector);
 /*#######################################################
 ## Function: get_z() = get_last() = vector[len(vector)-1]
@@ -958,7 +979,7 @@ function get_height(vector) = get_second(vector);
 ##
 #######################################################*/
 function get_last(vector) = vector[len(vector)-1];
-function get_z(vector) = get_last(vector);
+function get_z(vector)    = get_last(vector);
 /*#######################################################
 ## Function: distance()
 ##
