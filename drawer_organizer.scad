@@ -714,7 +714,9 @@ module connector(l,b1,b2,h, connections, border=false){
 module divider(l,b1,b2,h, border=false) {
     shear(h,border?border_overhang:0){
         difference() {
-            profile(l,b1,b2,h, border=border);
+            translate([-(l/2),0]){
+                profile(l,b1,b2,h, border=border,linear=true);
+            }
             mirror_copy(){
                 translate([-(l/2),0]){
                     fitting(b1,b2,h, female=true, border=border);
