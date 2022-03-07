@@ -734,25 +734,57 @@ module divider(l,b1,b2,h, border=false) {
         b1     (undef) = The "width" of the "bottom" of the profile on Y-axis
         b2     (undef) = The "width" of the "top" of the profile on Y-axis
         h      (undef) = The "height" distance on the Z-axis
-        border (undef) = Boolean used to create a right trapezoid
+        linear (true)  = Boolean used to enable linear_extrude
+
+        a      (90)    =
+        round  (false) = Boolean used to enable rotate_extrude
+
+        r      (undef) = "linear=true" Override "radius" of semi-circle incorporated within trapezoid
+        r      (undef) = "round=true" Offset "radius" for rotate_extrude
+
+        border (false) = Boolean used to create a right trapezoid
 */
 /* Example: Make sample object
-//   profile(divider_length,width_bottom,width_top,height, border=border);
+//    profile(divider_length,width_bottom,width_top,height, border=border);
+//    profile(l,b1,b2,h, linear=true);
+//    profile(r,a,round=true);
 ///////////////////////////////////////////////////////*/
-module profile(l,b1,b2,h, border, center=false){
+module profile(l,b1,b2,h,linear, r,a,round, border, center=false){
     border=(!is_undef(border))?border:false;
-    r1=b1/2;
-    r2=b2/2;
-    r3=border?r2:r1;
-    h=h-r2;
+    linear=(!is_undef(linear) && is_bool(linear))?linear
+          :(!is_undef(round) && is_bool(round))?!round
+          :true;
+    round=!linear;
+    l=(linear && !is_undef(l))?l:a;
+    if(linear){
+        assert(!is_undef(l),
+               "l is required for \"linear=true\" parameter");
+        assert(!is_undef(b1),
+               "b1 is required for \"linear=true\" parameter");
+        assert(!is_undef(b2),
+               "b2 is required for \"linear=true\" parameter");
+        assert(!is_undef(h),
+               "h is required for \"linear=true\" parameter");
+    }
+    r=(round && !is_undef(r))?r
+     :(round && !is_undef(l))?l
+     :undef;
+    if(round){
+        assert(!is_undef(r),
+               "r is required for \"round=true\" parameter");
+    }
+    a=(round && !is_undef(a))?a
+     :(round && !is_undef(b1))?b1
+     :90;    
     
-    b1_coord=[[-(r3),0], [r1,0]];
-    b2_coord=[[-(r2),h], [r2,h]];
-    points=concat([b1_coord], [b2_coord]);
-    origin=(center)?[-(l/2),0,-(h/2)] : [-(l/2),0,0];
+ 
     // Build 3D Polygon
-    translate(origin) rotate([90,0,90])
-        linear_extrude(l) profile_2d(points);
+    if(linear){
+        rotate([90,0,90])
+            linear_extrude(l) profile_2d(trapezoid(b1,b2,h,border=border),r);
+    } else {
+        rotate_extrude(angle=a) profile_2d(trapezoid(b1,b2,h,border=border),r);
+    }            
 }
 /*///////////////////////////////////////////////////////
 // Module: profile_2d()
