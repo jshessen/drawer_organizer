@@ -58,7 +58,7 @@ module parts(part) {
             connector_corner(round_outside=false, round_inside=true);
             connector_corner(round_outside=true, round_inside=true);        
         }
-        translate([40,0,0]) line_up([0, line_up_space]) {
+        translate([-connector_length*5,0,0]) line_up([0, line_up_space]) {
             //connector_zero();
             connector(0,width_bottom,width_top,height);            
             //connector_straight();
