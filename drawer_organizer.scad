@@ -40,6 +40,7 @@ line_up_space = 40;
 radius_bottom = width_bottom/2;
 radius_top = width_top/2;
 height_linear = height-radius_top;
+trapezoid=[width_bottom,width_top,height];
 
 
 parts(part);
@@ -405,7 +406,7 @@ module divider_lowered(length=100, lower=lowered_height, radius1_factor=lowered_
 
             // body
             intersection() {
-                profile(length,width_bottom,width_top,height, border=border);
+                profile(length,trapezoid, border=border);
                 flat_cap(top=false);
             }
         }
@@ -430,9 +431,9 @@ module divider_bend(length=100, distance=bend_distance, radius_factor=bend_radiu
         union() {
             // initial straight part and final straight part
             if (length_start > 0) {
-                profile(length_start,width_bottom,width_top,height, border=border);
+                profile(length_start,trapezoid, border=border);
                 translate([distance,length_start-length])
-                    profile(length_start,width_bottom,width_top,height, border=border);
+                    profile(length_start,trapezoid, border=border);
             }
             // bend profile in one direction
             translate([0,-length_start])
@@ -476,7 +477,7 @@ module connector_t_border(round=true) {
         translate([0,0.5*connector_length+border_overhang,0]) {
             fitting(width_bottom,width_top,height, male=true);
             intersection() {
-                profile(connector_length+border_overhang,width_bottom,width_top,height);
+                profile(connector_length+border_overhang,trapezoid);
                 skew = border_overhang;
                 max_radius = max(radius_top,radius_bottom);
                 multmatrix(m=[
@@ -521,7 +522,7 @@ module connector_corner_normal(round_outside=true, round_inside=true) {
             fitting(width_bottom,width_top,height, male=true, border=border);
             if (!round_outside)
                 translate([(half_connector/2),0,0])
-                    profile(half_connector,width_bottom,width_top,height, border=border);
+                    profile(half_connector,trapezoid, border=border);
         }
         
         translate([0,half_connector,0]) {
@@ -529,7 +530,7 @@ module connector_corner_normal(round_outside=true, round_inside=true) {
                 fitting(width_bottom,width_top,height, male=true, border=border);
                 if (!round_outside)
                     translate([(half_connector/2),0,0])
-                        profile(half_connector,width_bottom,width_top,height, border=border);
+                        profile(half_connector,trapezoid, border=border);
             }
         }
 
@@ -551,7 +552,7 @@ module connector_corner_border(round_outside=true, round_inside=true) {
 
     module side_wall() {
         intersection() {
-            profile(.5*connector_length+border_overhang,width_bottom,width_top,height, border=border);
+            profile(.5*connector_length+border_overhang,trapezoid, border=border);
             skew = border_overhang;
             translate([-(0.5*connector_length+border_overhang)+0.5*radius_bottom,0,0]) {
                 scale([1,-1,1]) {
@@ -687,7 +688,7 @@ module connector(l,b1,b2,h, connections, border=false){
     union() {
         for (r=r) {
             rotate([0,0,r]){
-                    profile(l,b1,b2,h,linear=true);
+                    profile(l,b1,b2,h, linear=true);
                 translate([l,0,0])
                    #fitting(b1,b2,h, male=true, border=border);
             }
@@ -731,44 +732,53 @@ module divider(l,b1,b2,h, border=false) {
         Creates 3D profile object
 
     Arguments:
-        l      (undef) = The "length" distance on the X-axis
+        length (undef) = The "length" distance on the X-axis
         b1     (undef) = The "width" of the "bottom" of the profile on Y-axis
         b2     (undef) = The "width" of the "top" of the profile on Y-axis
         h      (undef) = The "height" distance on the Z-axis
+        trapezoid      = ([b1,b2,h])
+        
+        r      (undef) = "linear=true" Override "radius" of semi-circle within trapezoid
         linear (true)  = Boolean used to enable linear_extrude
 
+        r      (undef) = "round=true" Offset "radius" for rotate_extrude
         a      (90)    =
         round  (false) = Boolean used to enable rotate_extrude
-
-        r      (undef) = "linear=true" Override "radius" of semi-circle incorporated within trapezoid
-        r      (undef) = "round=true" Offset "radius" for rotate_extrude
 
         border (false) = Boolean used to create a right trapezoid
 */
 /* Example: Make sample object
-//    profile(divider_length,width_bottom,width_top,height, border=border);
-//    profile(l,b1,b2,h, linear=true);
-//    profile(r,a,round=true);
+//    profile(divider_length,trapezoid, border=border);
+//    profile(connector_length,b1,b2,h, l,linear=true);
+//    profile(divider_length,b1,b2,h, r,a,round=true);
 ///////////////////////////////////////////////////////*/
-module profile(l,b1,b2,h,linear, r,a,round, border, center=false){
+module profile(length,b1,b2,h, trapezoid,linear, r,a,round, border, center=false){
     border=(!is_undef(border))?border:false;
+    trapezoid=(!is_undef(trapezoid) && is_list(trapezoid))?trapezoid
+             :(is_list(b1))?b1
+             :undef;
+    b1=(!is_undef(b1) && !is_list(b1))?b1
+        :get_b1(trapezoid)/2;
+    b2=(!is_undef(b2))?b2:get_b2(trapezoid)/2;
+    height=(!is_undef(height))?height:get_height(trapezoid)-b2/2;
+    
     linear=(!is_undef(linear) && is_bool(linear))?linear
           :(!is_undef(round) && is_bool(round))?!round
           :true;
     round=!linear;
-    l=(linear && !is_undef(l))?l:a;
+    length=(linear && !is_undef(length))?length:a;
     if(linear){
-        assert(!is_undef(l),
-               "l is required for \"linear=true\" parameter");
+        assert(!is_undef(length),
+               "length is required for \"linear=true\" parameter");
         assert(!is_undef(b1),
                "b1 is required for \"linear=true\" parameter");
         assert(!is_undef(b2),
                "b2 is required for \"linear=true\" parameter");
-        assert(!is_undef(h),
-               "h is required for \"linear=true\" parameter");
+        assert(!is_undef(height),
+               "height is required for \"linear=true\" parameter");
     }
     r=(round && !is_undef(r))?r
-     :(round && !is_undef(l))?l
+     :(round && !is_undef(length))?length
      :undef;
     if(round){
         assert(!is_undef(r),
@@ -776,16 +786,16 @@ module profile(l,b1,b2,h,linear, r,a,round, border, center=false){
     }
     a=(round && !is_undef(a))?a
      :(round && !is_undef(b1))?b1
-     :90;    
-    
+     :90;
  
     // Build 3D Polygon
     if(linear){
         rotate([90,0,90])
-            linear_extrude(l) profile_2d(trapezoid([b1,b2,h],border=border),r);
+            linear_extrude(length) profile_2d(trapezoid([b1,b2,height],border=border),r);
     } else {
-        rotate_extrude(angle=a) profile_2d(trapezoid([b1,b2,h],border=border),r);
-    }            
+        echo("getting closer");
+        //rotate_extrude(angle=a) profile_2d(trapezoid([b1,b2,height],border=border),r);
+    }
 }
 /*///////////////////////////////////////////////////////
 // Module: profile_2d()
@@ -801,7 +811,7 @@ module profile(l,b1,b2,h,linear, r,a,round, border, center=false){
 //   profile_2d(points);
 ///////////////////////////////////////////////////////*/
 module profile_2d(points, r){
-    h=get_height(get_second(get_top(points)));
+    h=get_y(get_second(get_top(points)));
     r=(!is_undef(r))
         ? r
         : abs(get_radius(get_second(get_top(points))));
