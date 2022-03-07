@@ -812,12 +812,9 @@ module fitting(b1,b2,h, male, female, border=false, center=false){
     r1 = border ? (r2+(b1/2)/2) : b1/2;
     r2_gap = r2+(r1-r2)*gap_top/h;
     r3=0.6*r1;
+    bottom=(0.3*r1)*2;
+    top=(0.5*r1)*2;
     
-    bottom=(0.3*r1);
-    top=(0.5*r1);
-    b1_coord=[[-(bottom),0], [bottom,0]];
-    b2_coord=[[-(top),r1], [top,r1]];
-    points=concat([b1_coord], [b2_coord]);
     origin=(center)?[-((r1+r3)/2+coplanar),0,-(h/2+coplanar)]
                    :[-(coplanar),0,-(coplanar)];
     
@@ -828,11 +825,11 @@ module fitting(b1,b2,h, male, female, border=false, center=false){
                 union(){
                     linear_extrude(height=h-gap_top, scale=r2_gap/r1){
                         translate([0,-(gap),0]) offset(delta=-(gap)){
-                            profile_2d(points,r=r3);
+                            profile_2d(trapezoid(bottom,top,r1+r3, border=border),r3);
                             // add "air channel" for female piece
                             if (!male)
                                 translate([-0.1*r1,r1])
-                                    square([0.2*r1, (r1)]);
+                                    square([0.2*r1,r1]);
                         }
                     }
                         snap_height_factor = 0.2;
