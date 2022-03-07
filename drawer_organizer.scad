@@ -782,9 +782,9 @@ module profile(l,b1,b2,h,linear, r,a,round, border, center=false){
     // Build 3D Polygon
     if(linear){
         rotate([90,0,90])
-            linear_extrude(l) profile_2d(trapezoid(b1,b2,h,border=border),r);
+            linear_extrude(l) profile_2d(trapezoid([b1,b2,h],border=border),r);
     } else {
-        rotate_extrude(angle=a) profile_2d(trapezoid(b1,b2,h,border=border),r);
+        rotate_extrude(angle=a) profile_2d(trapezoid([b1,b2,h],border=border),r);
     }            
 }
 /*///////////////////////////////////////////////////////
@@ -858,7 +858,7 @@ module fitting(b1,b2,h, male, female, border=false, center=false){
                 union(){
                     linear_extrude(height=h-gap_top, scale=r2_gap/r1){
                         translate([0,-(gap),0]) offset(delta=-(gap)){
-                            profile_2d(trapezoid(bottom,top,r1+r3, border=border),r3);
+                            profile_2d(trapezoid([bottom,top,r1+r3], border=border),r3);
                             // add "air channel" for female piece
                             if (!male)
                                 translate([-0.1*r1,r1])
@@ -947,6 +947,7 @@ module mirror_copy(v = [1, 0, 0]) {
         b1     (undef) = The "width" of the "bottom" of the fitting on X-axis
         b2     (undef) = The "width" of the "top" of the profile on X-axis
         h      (undef) = The "height" distance on the Z-axis
+        border (false) = Boolean used to create a right trapezoid
 */
 /* Example: Make sample object
 ##  echo(split_angle(360,4);
