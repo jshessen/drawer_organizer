@@ -653,7 +653,7 @@ module divider(l,b1,b2,h, border=false) {
 //    profile(connector_length,b1,b2,h, l,linear=true);
 //    profile(divider_length,b1,b2,h, r,a,round=true);
 ///////////////////////////////////////////////////////*/
-module profile(length,b1,b2,h, trapezoid,linear, r,a,round, border, center=false){
+module profile(length,b1,b2,h, trapezoid,linear, radius,angle,round, border, center=false){
     border=(!is_undef(border))?border:false;
     trapezoid=(!is_undef(trapezoid) && is_list(trapezoid))?trapezoid
              :(is_list(b1))?b1
@@ -667,7 +667,7 @@ module profile(length,b1,b2,h, trapezoid,linear, r,a,round, border, center=false
           :(!is_undef(round) && is_bool(round))?!round
           :true;
     round=!linear;
-    length=(linear && !is_undef(length))?length:a;
+    length=(!is_undef(length))?length:radius;
     if(linear){
         assert(!is_undef(length),
                "length is required for \"linear=true\" parameter");
@@ -678,24 +678,26 @@ module profile(length,b1,b2,h, trapezoid,linear, r,a,round, border, center=false
         assert(!is_undef(height),
                "height is required for \"linear=true\" parameter");
     }
-    r=(round && !is_undef(r))?r
-     :(round && !is_undef(length))?length
-     :undef;
+    radius=(round && !is_undef(radius))?radius
+          :(round && !is_undef(length))?length
+          :undef;
     if(round){
-        assert(!is_undef(r),
-               "r is required for \"round=true\" parameter");
+        assert(!is_undef(radius),
+               "radius is required for \"round=true\" parameter");
     }
-    a=(round && !is_undef(a))?a
-     :(round && !is_undef(b1))?b1
-     :90;
+    angle=(round && !is_undef(angle))?angle:90;
  
     // Build 3D Polygon
     if(linear){
         rotate([90,0,90])
-            linear_extrude(length) profile_2d(trapezoid([b1,b2,height],border=border),r);
+            linear_extrude(length) profile_2d(trapezoid([b1,b2,height],border=border),radius);
     } else {
-        echo("getting closer");
-        //rotate_extrude(angle=a) profile_2d(trapezoid([b1,b2,height],border=border),r);
+        rotate([0,0,180])
+            translate([-radius,-radius])
+                rotate_extrude2(angle=angle) {
+                    translate([radius,0])
+                        profile_2d(trapezoid([width_bottom,width_top,height],border=border));
+                }
     }
 }
 /*///////////////////////////////////////////////////////
