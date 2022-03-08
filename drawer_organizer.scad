@@ -161,31 +161,6 @@ module rotate_extrude2(angle=360, size=1000) {
     }
 }
 
-
-/*module profile_shape(border=false) {
-    skew = border_overhang;
-    multmatrix(m=[
-        [1,border?skew/height:0,0,border?-skew:0],
-        [0,1,0,0],
-        [0,0,1,0],
-        [0,0,0,1]]) {
-        polygon([
-            [-radius_bottom, 0],
-            [border ? radius_top : radius_bottom, 0],
-            [radius_top, height_linear],
-            [-radius_top, height_linear]
-        ]);
-        translate([0, height_linear])
-            circle(r=radius_top);
-    }
-}*/
-
-/*module profile(length=150, border=false) {
-    rotate([90,0,0])
-        linear_extrude(height=length)
-            profile_shape(border=border);
-}*/
-
 module profile_round(radius, angle=90, border=false) {
     border_overhang = border ? border_overhang : 0;
     translate([-radius-border_overhang,0]) {
@@ -225,63 +200,6 @@ module profile_corner(round=false, border=false) {
         }
     }
 }
-
-/*module fitting(male=true, border=false) {
-    // shrink male piece a little bit
-    gap = male ? gap : 0;
-    gap_top = male ? gap_top : 0;
-    connector_length = radius_bottom;
-    // For crazy people, that choose width_top > width_bottom. Otherwise pieces
-    // cannot be stuck together. Such a design actually looks quite nice ;)
-    radius_top = radius_top <= radius_bottom ? radius_top : radius_bottom;
-    radius_top_gap = radius_top+(radius_bottom-radius_top)*gap_top/height_linear;
-    skew = (radius_bottom-radius_top)/2 + border_overhang;
-    radius_bottom = border ? (radius_top+radius_bottom)/2 : radius_bottom;
-    // snap connection variables
-    snap_height_factor = 0.2;
-    snap_height = height_linear * snap_height_factor;
-    snap_radius = 0.3 * (radius_bottom * (1-snap_height_factor) +
-                         radius_top * snap_height_factor) +
-                  snap_connection_size;
-    multmatrix(m=[
-        [1,0,border?skew/height:0,border?-skew:0],
-        [0,1,0,0],
-        [0,0,1,0],
-        [0,0,0,1]]) {
-        union() {
-            linear_extrude(height=height_linear-gap_top, scale=radius_top_gap/radius_bottom) {
-                polygon([
-                    [-0.3*radius_bottom+gap, 0],
-                    [0.3*radius_bottom-gap, 0],
-                    [0.5*radius_bottom-gap, connector_length],
-                    [-0.5*radius_bottom+gap, connector_length]
-                ]);
-                translate([0,connector_length]) {
-                    circle(r=0.6*radius_bottom-gap);
-                    // add "air channel" for female piece
-                    if (!male)
-                        translate([-0.1*radius_bottom,0])
-                            square([0.2*radius_bottom, radius_bottom]);
-                }
-            }
-            // snap connection
-            if (snap_connection_size > 0)
-                translate([0,0,snap_height])
-                    rotate([-90,0,0])
-                        cylinder(h=connector_length, r1=snap_radius - gap, r2=0.8*snap_radius - gap);
-        }
-    }
-}*/
-
-/*module divider(length=100, border=false) {
-    difference() {
-        profile(length=length, border=border);
-        scale([1,-1,1])
-            fitting(male=false, border=border);
-        translate([0,-length])
-            fitting(male=false, border=border);
-    }
-}*/
 
 module divider_lowered(length=100, lower=lowered_height, radius1_factor=lowered_radius1_factor,
                        radius2_factor=lowered_radius2_factor) {
@@ -511,44 +429,6 @@ module connector_t_border(round=true) {
     }
 }
 
-module connector_corner_normal(round_outside=true, round_inside=true) {
-    border=false;
-    half_connector=connector_length/2;
-    union() {
-        if (round_inside) {
-            profile_corner(round=round_outside, border=border);
-        }
-
-        translate([half_connector,0,0]) {
-            fitting(width_bottom,width_top,height, male=true, border=border);
-            if (!round_outside)
-                translate([(half_connector/2),0,0])
-                    profile(half_connector,trapezoid, border=border);
-        }
-        
-        translate([0,half_connector,0]) {
-            rotate([0,0,270]) {
-                fitting(width_bottom,width_top,height, male=true, border=border);
-                if (!round_outside)
-                    translate([(half_connector/2),0,0])
-                        profile(half_connector,trapezoid, border=border);
-            }
-        }
-
-        if (!round_outside) {
-            rotate([0,0,180]) {
-                rotate_extrude2(angle=90) {
-                    intersection() {
-                        profile_2d(trapezoid([width_bottom,width_top,height],border=border));
-                        //profile_shape(border=border);
-                        square([max(radius_bottom, radius_top), height]);
-                    }
-                }
-            }
-        }
-    }
-}
-
 module connector_corner_border(round_outside=true, round_inside=true) {
     border = true;
 
@@ -614,15 +494,6 @@ module connector_corner_border(round_outside=true, round_inside=true) {
     }
 }
 
-module connector_corner(round_outside=true, round_inside=true, border=false) {
-    if (border)
-        connector_corner_border(round_outside=round_outside, round_inside=round_inside);
-    else
-        connector_corner_normal(round_outside=round_outside, round_inside=round_inside);
-}
-
-
-
 
 
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -649,6 +520,34 @@ module connector_x(round=true, border=false) { // `make` STL
     else
         if(round)
             connector_t_border(round=round);
+}
+module connector_corner(round_outside=true, round_inside=true, border=false) {
+    if (border)
+        connector_corner_border(round_outside=round_outside, round_inside=round_inside);
+    else {
+        half_connector=connector_length/2;
+        union() {
+            if (round_inside) {
+                profile_corner(round=round_outside,border=border);
+            }
+            rotate([0,0,90]) {
+                connector(connector_length,width_bottom,width_top,height,connections=1);
+            }
+            connector(connector_length,width_bottom,width_top,height,connections=1);
+            if (!round_outside) {
+                rotate([0,0,180]) {
+                    rotate_extrude2(angle=90) {
+                        intersection() {
+                            profile_2d(trapezoid([width_bottom,width_top,height],border=border));
+                            //profile_shape(border=border);
+                            square([max(radius_bottom, radius_top), height]);
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
 }
 /*
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -690,7 +589,7 @@ module connector(l,b1,b2,h, connections, border=false){
     union() {
         for (r=r) {
             rotate([0,0,r]){
-                    profile(l,b1,b2,h, linear=true);
+                profile(l,b1,b2,h, linear=true);
                 translate([l,0,0])
                    #fitting(b1,b2,h, male=true, border=border);
             }
