@@ -953,20 +953,22 @@ module mirror_copy(v = [1, 0, 0]) {
     Description:
         Build a representative trapezoid vector from [b1,b2,h]
     Arguments:
-        vector (undef) = [b1,b2,h]
         b1     (undef) = The "width" of the "bottom" of the fitting on X-axis
         b2     (undef) = The "width" of the "top" of the profile on X-axis
         h      (undef) = The "height" distance on the Z-axis
         border (false) = Boolean used to create a right trapezoid
+
+        v      (undef) = [b1,b2,h] or b1=[b1,b2,h]
 */
 /* Example: Make sample object
 ##  echo(split_angle(360,4);
 #######################################################*/
-function trapezoid(vector, border=false) =
-    let(r1=get_b1(vector)/2)
-    let(r2=get_b2(vector)/2)
+function trapezoid(b1,b2,h, v, border=false) =
+    let(v=(!is_undef(v))?v:(is_list(b1))?b1:undef)
+    let(r1=(!is_undef(r1) && !is_list(b1))?b1/2:get_b1(v)/2)
+    let(r2=(!is_undef(r2) && !is_list(b1))?b2/2:get_b2(v)/2)
     let(r3=border?r2:r1)
-    let(h=get_height(vector)-r2)
+    let(h=(!is_undef(h) && !is_list(b1))?h-r2:get_height(v)-r2)
     let(b1_coord=[[-(r3),0], [r1,0]])
     let(b2_coord=[[-(r2),h], [r2,h]])
     concat([b1_coord], [b2_coord]);
