@@ -162,7 +162,7 @@ module rotate_extrude2(angle=360, size=1000) {
 }
 
 
-module profile_shape(border=false) {
+/*module profile_shape(border=false) {
     skew = border_overhang;
     multmatrix(m=[
         [1,border?skew/height:0,0,border?-skew:0],
@@ -178,7 +178,7 @@ module profile_shape(border=false) {
         translate([0, height_linear])
             circle(r=radius_top);
     }
-}
+}*/
 
 /*module profile(length=150, border=false) {
     rotate([90,0,0])
@@ -191,7 +191,8 @@ module profile_round(radius, angle=90, border=false) {
     translate([-radius-border_overhang,0]) {
         rotate_extrude2(angle=angle) {
             translate([radius+border_overhang,0])
-                profile_shape(border=border);
+                profile_2d(trapezoid([width_bottom,width_top,height],border=border));
+                //profile_shape(border=border);
         }
     }
 }
@@ -538,7 +539,8 @@ module connector_corner_normal(round_outside=true, round_inside=true) {
             rotate([0,0,180]) {
                 rotate_extrude2(angle=90) {
                     intersection() {
-                        profile_shape(border=border);
+                        profile_2d(trapezoid([width_bottom,width_top,height],border=border));
+                        //profile_shape(border=border);
                         square([max(radius_bottom, radius_top), height]);
                     }
                 }
